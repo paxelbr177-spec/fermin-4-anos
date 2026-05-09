@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Fermín faz 4 anos! 🎂</title>
+  <meta name="description" content="Mural de recados e chá virtual do Fermín — 4 aninhos!" />
+
+  <!-- Open Graph (preview no WhatsApp, Telegram, etc) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Fermín faz 4 anos! 🎂" />
+  <meta property="og:description" content="Deixe um recadinho carinhoso e contribua com o chá virtual 💛" />
+  <meta property="og:image" content="./assets/01-boca.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=DM+Sans:wght@400;500;600;700&display=swap" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; color: #2B1810; background: #FFF4E0; }
+    body { margin: 0; }
+    .display-font { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+
+    @keyframes float        { 0%, 100% { transform: translateY(0px) rotate(var(--r,0deg)); } 50% { transform: translateY(-12px) rotate(var(--r,0deg)); } }
+    @keyframes confetti-fall{ 0% { transform: translateY(-20px) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+    @keyframes pulse-soft   { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes slide-up     { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes wiggle       { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+
+    .float-anim { animation: float 4s ease-in-out infinite; }
+    .msg-card   { animation: slide-up 0.5s ease-out backwards; }
+    .gift-card  { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .gift-card:hover { transform: translateY(-6px) rotate(-1deg); }
+    .photo-frame { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .photo-frame:nth-child(odd)  { transform: rotate(-2deg); }
+    .photo-frame:nth-child(even) { transform: rotate(2deg); }
+    .photo-frame:hover { transform: rotate(0deg) scale(1.03); z-index: 10; }
+    .grain { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E"); }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <!-- Loading state shown until React initializes -->
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Fraunces',serif;font-size:24px;color:#2B1810;font-style:italic;">
+      Preparando a festa do Fermín... 🎈
+    </div>
+  </div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect } = React;
+
+    // ====================================================================
+    //  CONFIG — TROQUE OS 2 VALORES ABAIXO PELOS DO SEU PROJETO SUPABASE
+    // ====================================================================
+    const SUPABASE_URL      = 'https://mtxufznbmswcjkzcxxck.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ZOGuRRsY1NGd8s9KJZ7Ohw_hM5RxP96';
+    // ====================================================================
+
+    const CONFIG = {
+      nomeAniversariante: 'Fermín',
+      idade: 4,
+      dataFesta: '21 de maio de 2026',
+      diaSemana: 'quinta-feira',
+      pagamento: {
+        br: { flag: '🇧🇷', tipo: 'PIX', label: 'CPF',     chave: '058.907.098-36' },
+        ar: { flag: '🇦🇷', tipo: 'CVU', label: 'FIWIND',  chave: '20436092041' },
+      },
+      fotos: [
+        { url: './assets/01-boca.jpg',         caption: 'Hincha do Boca 💙💛' },
+        { url: './assets/02-surf.jpg',         caption: 'Surfista em Ubatuba 🏄' },
+        { url: './assets/03-por-do-sol.jpg',   caption: 'Pôr do sol 🌅' },
+        { url: './assets/04-aventura.jpg',     caption: 'Aventureiro ⛰️' },
+        { url: './assets/05-estiloso.jpg',     caption: 'Estiloso 😎' },
+        { url: './assets/06-telefone.jpg',     caption: 'Conversinha 📞' },
+        { url: './assets/07-banho.jpg',        caption: 'Pós-banho 🛁' },
+      ],
+      presentes: [
+        { id: 'livrinho',  emoji: '📚', nome: 'Livrinho',         valor: 25,  cor: '#F4A261' },
+        { id: 'brinquedo', emoji: '🧸', nome: 'Brinquedo',        valor: 50,  cor: '#FF6B6B' },
+        { id: 'roupinha',  emoji: '👕', nome: 'Roupinha',         valor: 80,  cor: '#06A77D' },
+        { id: 'sonic',     emoji: '🦔', nome: 'Quarto do Sonic',  valor: 100, cor: '#5B7FFF' },
+      ],
+    };
+
+    // Initialize Supabase client
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ============ Inline SVG icons (lucide-style) ============
+    const ICONS = {
+      heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>,
+      gift: <>
+        <rect x="3" y="8" width="18" height="4" rx="1"/>
+        <path d="M12 8v13"/>
+        <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>
+        <path d="M7.5 8a2.5 2.5 0 0 1 0-5C9.8 3 12 5.4 12 8c0-2.6 2.2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>
+      </>,
+      messageCircle: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>,
+      send: <>
+        <path d="m22 2-7 20-4-9-9-4Z"/>
+        <path d="M22 2 11 13"/>
+      </>,
+      copy: <>
+        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+      </>,
+      check: <path d="M20 6 9 17l-5-5"/>,
+      cake: <>
+        <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/>
+        <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/>
+        <path d="M2 21h20"/>
+        <path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/>
+      </>,
+      sparkles: <>
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+        <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+      </>,
+    };
+
+    function Icon({ name, size = 24, style }) {
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+          {ICONS[name]}
+        </svg>
+      );
+    }
+
+    // ============ Main App ============
+    function App() {
+      const [messages, setMessages]       = useState([]);
+      const [giftCounts, setGiftCounts]   = useState({});
+      const [name, setName]               = useState('');
+      const [text, setText]               = useState('');
+      const [submitting, setSubmitting]   = useState(false);
+      const [loading, setLoading]         = useState(true);
+      const [copiedKey, setCopiedKey]     = useState(null);
+      const [selectedGift, setSelectedGift] = useState(null);
+      const [errorMsg, setErrorMsg]       = useState('');
+
+      // Initial load + realtime subscription
+      useEffect(() => {
+        let mounted = true;
+
+        (async () => {
+          try {
+            const [r1, r2] = await Promise.all([
+              sb.from('fermin_recados').select('*').order('created_at', { ascending: false }),
+              sb.from('fermin_presentes_contador').select('*'),
+            ]);
+            if (!mounted) return;
+            if (r1.error) throw r1.error;
+            if (r2.error) throw r2.error;
+            setMessages(r1.data || []);
+            setGiftCounts(Object.fromEntries((r2.data || []).map(g => [g.gift_id, g.count])));
+          } catch (err) {
+            console.error('Load error:', err);
+            if (mounted) setErrorMsg('Não foi possível carregar os recados. Confira a configuração do Supabase no topo do arquivo.');
+          } finally {
+            if (mounted) setLoading(false);
+          }
+        })();
+
+        const channel = sb
+          .channel('fermin_changes')
+          .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'fermin_recados' },
+            payload => {
+              setMessages(prev => prev.find(m => m.id === payload.new.id) ? prev : [payload.new, ...prev]);
+            }
+          )
+          .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'fermin_presentes_contador' },
+            payload => {
+              if (payload.new) {
+                setGiftCounts(prev => ({ ...prev, [payload.new.gift_id]: payload.new.count }));
+              }
+            }
+          )
+          .subscribe();
+
+        return () => { mounted = false; sb.removeChannel(channel); };
+      }, []);
+
+      const sendMessage = async () => {
+        if (!name.trim() || !text.trim() || submitting) return;
+        setSubmitting(true);
+        setErrorMsg('');
+        try {
+          const { data, error } = await sb
+            .from('fermin_recados')
+            .insert({ nome: name.trim(), mensagem: text.trim() })
+            .select()
+            .single();
+          if (error) throw error;
+          setMessages(prev => prev.find(m => m.id === data.id) ? prev : [data, ...prev]);
+          setName('');
+          setText('');
+        } catch (err) {
+          console.error('Send error:', err);
+          setErrorMsg('Não foi possível enviar. Tente novamente.');
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      const incrementGift = async (giftId) => {
+        try {
+          const { data, error } = await sb.rpc('incrementar_presente', { p_gift_id: giftId });
+          if (error) throw error;
+          setGiftCounts(prev => ({ ...prev, [giftId]: data }));
+          setSelectedGift(giftId);
+          setTimeout(() => setSelectedGift(null), 2400);
+        } catch (err) {
+          console.error('Gift error:', err);
+        }
+      };
+
+      const copyKey = (which, value) => {
+        if (navigator.clipboard) navigator.clipboard.writeText(value);
+        setCopiedKey(which);
+        setTimeout(() => setCopiedKey(null), 2000);
+      };
+
+      const formatDate = iso => {
+        const d = new Date(iso);
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) +
+          ' • ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      };
+
+      return (
+        <div className="min-h-screen w-full" style={{ background: '#FFF4E0', color: '#2B1810' }}>
+
+          {/* Confetti background */}
+          <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+            {[...Array(18)].map((_, i) => {
+              const colors = ['#FF6B6B', '#F4A261', '#06A77D', '#5B7FFF', '#FFD93D'];
+              return (
+                <div key={i} style={{
+                  position: 'absolute', left: `${(i * 5.7) % 100}%`, top: '-20px',
+                  width: '10px', height: '14px', background: colors[i % colors.length],
+                  borderRadius: i % 2 ? '2px' : '50%',
+                  animation: `confetti-fall ${6 + (i % 5)}s linear ${i * 0.4}s infinite`,
+                }}/>
+              );
+            })}
+          </div>
+
+          <div className="fixed inset-0 grain pointer-events-none opacity-[0.08]" style={{ zIndex: 1 }} />
+
+          <div className="relative" style={{ zIndex: 2 }}>
+
+            {/* HERO */}
+            <header className="px-6 pt-12 pb-20 text-center relative overflow-hidden">
+              <div className="absolute top-12 left-8 text-5xl float-anim" style={{ '--r': '-15deg' }}>🎈</div>
+              <div className="absolute top-20 right-10 text-5xl float-anim" style={{ '--r': '20deg', animationDelay: '1s' }}>🎈</div>
+              <div className="absolute top-40 left-16 text-4xl float-anim" style={{ '--r': '10deg', animationDelay: '2s' }}>⭐</div>
+              <div className="absolute bottom-8 right-20 text-4xl float-anim" style={{ '--r': '-25deg', animationDelay: '0.5s' }}>🎉</div>
+
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: '#2B1810', color: '#FFF4E0' }}>
+                <Icon name="sparkles" size={16} />
+                <span style={{ fontSize: '13px', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
+                  Convite Especial
+                </span>
+                <Icon name="sparkles" size={16} />
+              </div>
+
+              <p className="display-font" style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontStyle: 'italic', color: '#E84855', marginBottom: '8px' }}>
+                o nosso pequeno
+              </p>
+
+              <h1 className="display-font" style={{ fontSize: 'clamp(72px, 16vw, 180px)', fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.04em', color: '#2B1810', marginBottom: '12px' }}>
+                {CONFIG.nomeAniversariante}
+              </h1>
+
+              <p className="display-font" style={{ fontSize: 'clamp(22px, 4.5vw, 36px)', fontWeight: 600, color: '#2B1810' }}>
+                está fazendo <span style={{ color: '#E84855', fontStyle: 'italic' }}>{CONFIG.idade} aninhos</span>!
+              </p>
+
+              <div className="mt-10 inline-block px-8 py-5 rounded-2xl" style={{ background: '#FFFFFF', boxShadow: '6px 6px 0 #2B1810', border: '2px solid #2B1810' }}>
+                <div className="flex items-center gap-3 justify-center">
+                  <Icon name="cake" size={22} style={{ color: '#E84855' }} />
+                  <div className="text-left">
+                    <p style={{ fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#E84855', fontWeight: 700 }}>
+                      Salve a data
+                    </p>
+                    <p className="display-font" style={{ fontSize: '22px', fontWeight: 700, color: '#2B1810', lineHeight: 1.1 }}>
+                      {CONFIG.dataFesta}
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#2B1810', opacity: 0.7 }}>
+                      {CONFIG.diaSemana}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            {/* GALERIA */}
+            <section className="px-6 py-16 max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <p style={{ fontSize: '12px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#E84855', fontWeight: 700, marginBottom: '8px' }}>
+                  Quatro anos de alegria
+                </p>
+                <h2 className="display-font" style={{ fontSize: 'clamp(36px, 6vw, 56px)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                  Nosso pequeno <em style={{ color: '#E84855' }}>grandão</em>
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                {CONFIG.fotos.map((foto, i) => (
+                  <div key={i} className="photo-frame" style={{
+                    background: '#FFFFFF', padding: '12px 12px 50px 12px',
+                    boxShadow: '4px 4px 0 #2B1810', border: '2px solid #2B1810',
+                    borderRadius: '4px', aspectRatio: '4/5', position: 'relative',
+                  }}>
+                    <img src={foto.url} alt={`Fermín ${i + 1}`} loading="lazy"
+                         style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '2px' }} />
+                    <p style={{
+                      position: 'absolute', bottom: '14px', left: 0, right: 0, textAlign: 'center',
+                      fontFamily: "'Fraunces', serif", fontStyle: 'italic', fontSize: '14px', color: '#2B1810',
+                    }}>
+                      Fermín · {foto.caption}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* MURAL DE MENSAGENS */}
+            <section className="px-6 py-16" style={{ background: '#2B1810', color: '#FFF4E0' }}>
+              <div className="max-w-3xl mx-auto">
+                <div className="text-center mb-10">
+                  <Icon name="messageCircle" size={36} style={{ display: 'inline-block', color: '#FFD93D', marginBottom: '12px' }} />
+                  <p style={{ fontSize: '12px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#FFD93D', fontWeight: 700, marginBottom: '8px' }}>
+                    Mural de Carinho
+                  </p>
+                  <h2 className="display-font" style={{ fontSize: 'clamp(34px, 5.5vw, 50px)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                    Deixe um <em style={{ color: '#FFD93D' }}>recadinho</em> pro Fermín
+                  </h2>
+                  <p style={{ fontSize: '15px', opacity: 0.75, marginTop: '12px', maxWidth: '480px', margin: '12px auto 0' }}>
+                    Sua mensagem ficará visível para toda a família. Vamos guardar de lembrança!
+                  </p>
+                </div>
+
+                {/* Form */}
+                <div style={{ background: '#FFF4E0', color: '#2B1810', padding: '24px', borderRadius: '16px', marginBottom: '32px' }}>
+                  <div className="space-y-3">
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#E84855' }}>
+                        Seu nome completo
+                      </label>
+                      <input type="text" value={name} onChange={e => setName(e.target.value)}
+                        placeholder="ex: Tia Marina Salles" maxLength={60}
+                        style={{ width: '100%', marginTop: '6px', padding: '12px 14px', border: '2px solid #2B1810', borderRadius: '8px', fontSize: '16px', background: '#FFFFFF', fontFamily: 'inherit', outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#E84855' }}>
+                        Sua mensagem
+                      </label>
+                      <textarea value={text} onChange={e => setText(e.target.value)}
+                        placeholder="Parabéns, Ferminzinho! Tia te ama muito..." rows={3} maxLength={400}
+                        style={{ width: '100%', marginTop: '6px', padding: '12px 14px', border: '2px solid #2B1810', borderRadius: '8px', fontSize: '16px', background: '#FFFFFF', fontFamily: 'inherit', outline: 'none', resize: 'vertical' }} />
+                      <p style={{ fontSize: '11px', textAlign: 'right', opacity: 0.5, marginTop: '4px' }}>{text.length}/400</p>
+                    </div>
+                    {errorMsg && (
+                      <p style={{ fontSize: '13px', color: '#E84855', textAlign: 'center', fontWeight: 600 }}>{errorMsg}</p>
+                    )}
+                    <button onClick={sendMessage}
+                      disabled={!name.trim() || !text.trim() || submitting}
+                      style={{
+                        width: '100%', padding: '14px',
+                        background: !name.trim() || !text.trim() || submitting ? '#9E9E9E' : '#E84855',
+                        color: '#FFF4E0', border: '2px solid #2B1810', borderRadius: '10px',
+                        fontSize: '15px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                        cursor: !name.trim() || !text.trim() || submitting ? 'not-allowed' : 'pointer',
+                        boxShadow: '4px 4px 0 #2B1810',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      }}>
+                      <Icon name="send" size={16} />
+                      {submitting ? 'Enviando...' : 'Enviar recadinho'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mensagens existentes */}
+                {loading ? (
+                  <p style={{ textAlign: 'center', opacity: 0.6 }}>Carregando mensagens...</p>
+                ) : messages.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', opacity: 0.6 }}>
+                    <Icon name="heart" size={32} style={{ display: 'inline-block', marginBottom: '12px' }} />
+                    <p>Seja o primeiro a deixar uma mensagem!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p style={{ fontSize: '13px', textAlign: 'center', opacity: 0.6, marginBottom: '16px' }}>
+                      {messages.length} mensagem{messages.length !== 1 ? 's' : ''} de carinho 💛
+                    </p>
+                    {messages.map((msg, i) => {
+                      const colors = ['#FFD93D', '#F4A261', '#06A77D', '#5B7FFF', '#FF6B6B', '#FFFFFF'];
+                      const bg = colors[i % colors.length];
+                      return (
+                        <div key={msg.id} className="msg-card" style={{
+                          background: bg, color: '#2B1810', padding: '18px 22px',
+                          borderRadius: '14px', border: '2px solid #2B1810',
+                          boxShadow: '4px 4px 0 rgba(0,0,0,0.4)',
+                          transform: `rotate(${(i % 2 === 0 ? -1 : 1) * 0.5}deg)`,
+                          animationDelay: `${Math.min(i, 8) * 0.06}s`,
+                        }}>
+                          <p className="display-font" style={{ fontSize: '17px', lineHeight: 1.5, fontStyle: 'italic', marginBottom: '10px' }}>
+                            "{msg.mensagem}"
+                          </p>
+                          <div className="flex items-center justify-between" style={{ borderTop: '1px dashed rgba(43,24,16,0.3)', paddingTop: '8px' }}>
+                            <p style={{ fontSize: '13px', fontWeight: 700 }}>— {msg.nome}</p>
+                            <p style={{ fontSize: '11px', opacity: 0.6 }}>{formatDate(msg.created_at)}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* PRESENTES (CHÁ VIRTUAL) */}
+            <section className="px-6 py-16 max-w-5xl mx-auto">
+              <div className="text-center mb-12">
+                <Icon name="gift" size={36} style={{ display: 'inline-block', color: '#E84855', marginBottom: '12px' }} />
+                <p style={{ fontSize: '12px', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#E84855', fontWeight: 700, marginBottom: '8px' }}>
+                  Chá Virtual
+                </p>
+                <h2 className="display-font" style={{ fontSize: 'clamp(34px, 5.5vw, 50px)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                  Presentinhos pro <em style={{ color: '#E84855' }}>Fermín</em>
+                </h2>
+                <p style={{ fontSize: '15px', opacity: 0.75, marginTop: '12px', maxWidth: '520px', margin: '12px auto 0' }}>
+                  Escolha uma das opções abaixo e contribua via PIX 🇧🇷 ou CVU 🇦🇷. Sem obrigação alguma — sua presença já é o maior presente! 💛
+                </p>
+              </div>
+
+              {/* Pagamento BR + AR */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {Object.entries(CONFIG.pagamento).map(([key, info]) => {
+                  const isCopied = copiedKey === key;
+                  return (
+                    <div key={key} style={{
+                      background: '#2B1810', color: '#FFF4E0',
+                      padding: '22px 24px', borderRadius: '14px',
+                      border: '2px solid #2B1810', boxShadow: '4px 4px 0 #FFD93D',
+                    }}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <span style={{ fontSize: '32px', lineHeight: 1 }}>{info.flag}</span>
+                        <div>
+                          <p style={{ fontSize: '11px', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#FFD93D', fontWeight: 700 }}>
+                            {info.tipo}
+                          </p>
+                          <p style={{ fontSize: '11px', opacity: 0.7 }}>{info.label}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: '17px', fontWeight: 600, fontFamily: 'monospace', marginBottom: '14px', wordBreak: 'break-all' }}>
+                        {info.chave}
+                      </p>
+                      <button onClick={() => copyKey(key, info.chave)} style={{
+                        width: '100%',
+                        background: isCopied ? '#06A77D' : '#FFD93D', color: '#2B1810',
+                        border: 'none', padding: '10px 14px', borderRadius: '8px',
+                        fontWeight: 700, fontSize: '13px', letterSpacing: '0.05em', textTransform: 'uppercase',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                      }}>
+                        {isCopied ? (
+                          <><Icon name="check" size={16} /> Copiado!</>
+                        ) : (
+                          <><Icon name="copy" size={16} /> Copiar {info.tipo}</>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Cards de presente */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                {CONFIG.presentes.map((p) => {
+                  const count = giftCounts[p.id] || 0;
+                  const isSelected = selectedGift === p.id;
+                  return (
+                    <button key={p.id} onClick={() => incrementGift(p.id)} className="gift-card" style={{
+                      background: '#FFFFFF', border: `3px solid ${p.cor}`, borderRadius: '18px',
+                      padding: '24px 20px', cursor: 'pointer', boxShadow: `5px 5px 0 ${p.cor}`,
+                      fontFamily: 'inherit', color: '#2B1810', textAlign: 'center',
+                      position: 'relative', overflow: 'hidden',
+                    }}>
+                      {isSelected && (
+                        <div style={{ position: 'absolute', inset: 0, background: p.cor, opacity: 0.15, animation: 'pulse-soft 0.6s ease-out' }} />
+                      )}
+                      <div style={{ fontSize: '52px', marginBottom: '8px', display: 'inline-block', animation: isSelected ? 'wiggle 0.5s ease-in-out' : 'none' }}>
+                        {p.emoji}
+                      </div>
+                      <p className="display-font" style={{ fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
+                        {p.nome}
+                      </p>
+                      <p style={{ fontSize: '28px', fontWeight: 800, color: p.cor, letterSpacing: '-0.02em' }}>
+                        R$ {p.valor}
+                      </p>
+                      <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: `1px dashed ${p.cor}`, fontSize: '12px', color: '#2B1810', opacity: 0.7 }}>
+                        {count > 0 ? (
+                          <span><strong>{count}</strong> contribuiu{count !== 1 ? 'ram' : ''} 💛</span>
+                        ) : (
+                          <span>Seja o primeiro</span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '10px', marginTop: '6px', color: p.cor, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        Já contribui ↑
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p style={{ fontSize: '13px', textAlign: 'center', opacity: 0.6, marginTop: '20px' }}>
+                * Após fazer o pagamento (PIX 🇧🇷 ou CVU 🇦🇷), clique no card correspondente para registrar sua contribuição.
+              </p>
+            </section>
+
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
